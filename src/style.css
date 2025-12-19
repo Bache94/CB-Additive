@@ -35,6 +35,14 @@
   --font-body: 'Outfit', sans-serif;
 }
 
+@media (max-width: 768px) {
+  :root {
+    --space-md: 1.5rem;
+    --space-lg: 2.5rem;
+    --space-xl: 4rem;
+  }
+}
+
 /* Reset & Base */
 *,
 *::before,

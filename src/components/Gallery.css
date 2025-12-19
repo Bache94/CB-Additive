@@ -145,8 +145,6 @@
 .card-category {
     color: var(--primary);
     font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
     margin-bottom: var(--space-xs);
     display: block;
 }
@@ -154,4 +152,27 @@
 .card-title {
     font-size: 1.25rem;
     margin-bottom: var(--space-xs);
+}
+
+@media (max-width: 768px) {
+    .gallery-title {
+        font-size: 2rem;
+    }
+
+    .gallery-grid {
+        grid-template-columns: 1fr;
+        /* Single column on mobile */
+        gap: var(--space-md);
+        padding: 0;
+    }
+
+    /* Modal Mobile Adjustments */
+    .modal-content {
+        width: 95%;
+        padding: var(--space-sm);
+    }
+
+    .modal-image {
+        height: 200px;
+    }
 }

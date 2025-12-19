@@ -76,12 +76,40 @@
 }
 
 @media (max-width: 768px) {
+    .hero {
+        padding-top: 60px;
+        /* Reduced header height */
+        align-items: flex-start;
+        /* Better alignment on mobile */
+        padding-bottom: var(--space-lg);
+    }
+
+    .hero-content {
+        padding-top: var(--space-lg);
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 10vw, 4rem);
+        margin-bottom: param(--space-xs);
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: var(--space-md);
+    }
+
     .hero-title-row {
         flex-direction: column;
         gap: var(--space-sm);
     }
 
     .hero-logo {
-        height: 80px;
+        height: 120px;
+        /* Smaller logo on mobile */
+        margin-bottom: var(--space-sm);
+    }
+
+    .hero-actions {
+        justify-content: center;
     }
 }
