@@ -25,17 +25,12 @@ const router = () => {
     if (hash === '#impressum') {
         import('./components/Impressum').then(module => {
             app.appendChild(module.Impressum());
-            app.appendChild(Footer());
+            app.appendChild(Footer(true));
         });
     } else if (hash === '#datenschutz') {
         import('./components/Datenschutz').then(module => {
             app.appendChild(module.Datenschutz());
-            app.appendChild(Footer());
-        });
-    } else if (hash === '#agb') {
-        import('./components/AGB').then(module => {
-            app.appendChild(module.AGB());
-            app.appendChild(Footer());
+            app.appendChild(Footer(true));
         });
     } else {
         // Landing Page (Default)

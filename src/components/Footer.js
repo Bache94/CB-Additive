@@ -1,4 +1,4 @@
-export function Footer() {
+export function Footer(isLegalPage = false) {
   const element = document.createElement('footer');
   element.id = 'contact';
   element.style.cssText = `
@@ -9,8 +9,8 @@ export function Footer() {
     color: var(--text-muted);
   `;
 
-  element.innerHTML = `
-    <div class="container">
+  // Content for Main Page vs Legal Page
+  const mainContent = `
       <h3 style="font-size: 1.5rem; color: #fff; margin-bottom: var(--space-sm);">CB <span style="color: var(--primary);">Additive</span></h3>
       
       <div style="max-width: 600px; margin: 0 auto var(--space-md);">
@@ -19,6 +19,11 @@ export function Footer() {
       </div>
 
       <a href="mailto:cbadditive@outlook.de" class="btn btn-secondary" style="margin-bottom: var(--space-lg); display: inline-block;">Schreib mir</a>
+  `;
+
+  element.innerHTML = `
+    <div class="container">
+      ${!isLegalPage ? mainContent : ''}
       
       <!-- Hidden Admin Trigger -->
       <button id="admin-trigger" style="opacity: 0; cursor: default; border: none; background: none; width: 50px; height: 30px; display: block; margin: 0 auto;">M</button>
@@ -27,10 +32,10 @@ export function Footer() {
         <div style="display: flex; justify-content: center; gap: var(--space-md); flex-wrap: wrap; font-size: 0.8rem; color: var(--text-muted); margin-bottom: var(--space-sm);">
             <a href="#impressum" style="text-decoration: none; color: inherit;">Impressum</a>
             <a href="#datenschutz" style="text-decoration: none; color: inherit;">Datenschutzerklärung</a>
-            <a href="#agb" style="text-decoration: none; color: inherit;">Widerrufsbelehrung & AGB</a>
         </div>
         <div style="font-size: 0.8rem; opacity: 0.5;">
-            &copy; 2025 CB Additive – Erstellt mit Liebe zum Detail. Alle Rechte vorbehalten.
+            &copy; 2025 CB Additive <br> 
+            <span style="font-size: 0.75rem;">Privates, hobbymäßiges Projekt · Kein Online-Shop</span>
         </div>
       </div>
     </div>
