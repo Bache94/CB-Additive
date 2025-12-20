@@ -13,6 +13,7 @@ export function Header() {
             <span></span>
         </button>
         <ul class="nav-links">
+          <li><a href="#hero">Startseite</a></li>
           <li><a href="#gallery">Meine Drucke</a></li>
           <li><a href="#contact">Kontakt Aufnahme</a></li>
         </ul>
