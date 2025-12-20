@@ -11,6 +11,9 @@ Alle Änderungen am Projekt "CB Additive Portfolio".
 - **Galerie-Info:** Neue Info-Box "Was ich für dich drucken kann" mit Details zu Materialien, Größe (300mm) und Farbauswahl.
 - **Animationen:** "Atmende" Texteffekte (`breathing-text`) und Glassmorphism-Design für Rechts-Seiten.
 - **Sicherheit:** GitHub Repository Initialisierung.
+- **Galerie-Admin:** Upload-Funktion für eigene Bilder (Drag & Drop / File Input) und Lösch-Funktion integriert.
+- **Persistent:** Bilder werden lokal gespeichert (LocalStorage).
+- **Layout:** "Was ich für dich drucken kann" unter die Galerie verschoben.
 
 ### Geändert
 - **Footer:**

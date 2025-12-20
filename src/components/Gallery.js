@@ -1,21 +1,31 @@
 import './Gallery.css';
 
-const items = [];
+// Initial Load from LocalStorage
+let items = JSON.parse(localStorage.getItem('gallery_items')) || [];
 
 export function Gallery() {
   const element = document.createElement('section');
   element.id = 'gallery';
   element.classList.add('gallery');
 
-  const cards = items.map(item => `
-    <div class="gallery-card">
-      <div class="card-image"></div>
-      <div class="card-overlay">
-        <span class="card-category">${item.category}</span>
-        <h3 class="card-title">${item.title}</h3>
+  // Check Admin Status (Session Storage for simple persist during refresh)
+  let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+
+  const renderCards = () => {
+    if (items.length === 0) {
+      return '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Noch keine Bilder vorhanden.</p>';
+    }
+    return items.map((item, index) => `
+      <div class="gallery-card" data-index="${index}">
+        <div class="card-image" style="background-image: url('${item.image}'); background-size: cover; background-position: center;"></div>
+        <div class="card-overlay">
+          <p class="card-description" style="margin-bottom: 0.5rem; font-size: 0.9rem;">${item.description}</p>
+          <h3 class="card-title">${item.title}</h3>
+          ${isAdmin ? `<button class="delete-btn" data-index="${index}" style="position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">&times;</button>` : ''}
+        </div>
       </div>
-    </div>
-  `).join('');
+    `).join('');
+  };
 
   element.innerHTML = `
     <div class="container">
@@ -24,8 +34,12 @@ export function Gallery() {
         <p class="gallery-subtitle reveal-text delay-100">Ein Schaufenster für Präzision und Kreativität.</p>
       </div>
 
-      <!-- Services Info Section -->
-      <div class="glass" style="padding: var(--space-md); margin-bottom: var(--space-lg); border-radius: var(--radius-md); max-width: 800px; margin-left: auto; margin-right: auto;">
+      <div class="gallery-grid">
+        ${renderCards()}
+      </div>
+
+      <!-- Services Info Section (Moved Below) -->
+      <div class="glass" style="padding: var(--space-md); margin-top: var(--space-lg); margin-bottom: var(--space-lg); border-radius: var(--radius-md); max-width: 800px; margin-left: auto; margin-right: auto;">
         <h3 style="margin-bottom: var(--space-sm); color: var(--primary);">Was ich für dich drucken kann</h3>
         <p style="margin-bottom: var(--space-sm); color: var(--text-muted);">Ob technisches Bauteil, individuelle Deko oder ein besonderes Geschenk – ich unterstütze dich gerne bei deinem Projekt.</p>
         
@@ -57,10 +71,6 @@ export function Gallery() {
             </div>
         </div>
       </div>
-
-      <div class="gallery-grid">
-        ${cards}
-      </div>
     </div>
     
     <!-- Lightbox Modal -->
@@ -74,92 +84,19 @@ export function Gallery() {
     </div>
   `;
 
-  // Modal Logic
+  // --- Element Selectors ---
+  const grid = element.querySelector('.gallery-grid');
   const modal = element.querySelector('#gallery-modal');
   const closeBtn = element.querySelector('.modal-close');
   const modalTitle = element.querySelector('.modal-title');
   const modalCategory = element.querySelector('.modal-category');
   const modalContent = element.querySelector('.modal-content');
+  const modalImage = element.querySelector('.modal-image');
 
-  // Admin State (Module Scope Simulation)
-  let isAdmin = false;
-
-  // Render Admin Controls in Modal
-  const renderModalAdminControls = () => {
-    const existingControls = modalContent.querySelector('.admin-controls');
-    if (existingControls) existingControls.remove();
-
-    if (isAdmin) {
-      const controls = document.createElement('div');
-      controls.className = 'admin-controls';
-      controls.style.marginTop = '1rem';
-      controls.style.paddingTop = '1rem';
-      controls.style.borderTop = '1px solid rgba(255,255,255,0.1)';
-      controls.innerHTML = `
-        <button id="add-project-image" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1rem;">+ Bild hinzufügen</button>
-        <div id="image-upload-area" style="display: none; margin-top: 10px;">
-            <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 5px;">Simulierter Upload:</p>
-            <div style="width: 100px; height: 100px; background: #333; border: 1px dashed #666; display: flex; align-items: center; justify-content: center; cursor: pointer;" id="sim-upload-box">
-                <span>Klick mich</span>
-            </div>
-        </div>
-      `;
-      modalContent.appendChild(controls);
-
-      // Upload Logic
-      const addBtn = controls.querySelector('#add-project-image');
-      const uploadArea = controls.querySelector('#image-upload-area');
-      const simUploadBox = controls.querySelector('#sim-upload-box');
-
-      addBtn.addEventListener('click', () => {
-        uploadArea.style.display = 'block';
-      });
-
-      simUploadBox.addEventListener('click', () => {
-        // Simulierte Bild-Hinzufügung
-        const newImg = document.createElement('div');
-        newImg.className = 'modal-image';
-        newImg.style.marginTop = '10px';
-        newImg.style.background = `linear-gradient(${Math.random() * 360}deg, #BD00FF, #00F2FF)`; // Zufalls-Gradient als "neues Bild"
-
-        // Füge es vor den Controls ein
-        modalContent.insertBefore(newImg, controls);
-        uploadArea.style.display = 'none';
-        alert('Neues Bild zum Projekt hinzugefügt! (Temporär)');
-      });
-    }
-  };
-
-  // Close logic
-  const closeModal = () => modal.classList.remove('active');
-  closeBtn.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-
-  // Open logic
-  const grid = element.querySelector('.gallery-grid');
-  grid.addEventListener('click', (e) => {
-    const card = e.target.closest('.gallery-card');
-    if (card) {
-      const title = card.querySelector('.card-title').textContent;
-      const category = card.querySelector('.card-category').textContent;
-      modalTitle.textContent = title;
-      modalCategory.textContent = category;
-
-      // Clean up previous extra images (for demo purposes we reset)
-      const extraImages = modalContent.querySelectorAll('.modal-image:not(:first-of-type)');
-      extraImages.forEach(img => img.remove());
-
-      renderModalAdminControls();
-      modal.classList.add('active');
-    }
-  });
-
-  // Admin Login Modal (Reusable)
+  // --- Admin Modal HTML ---
   const uploadModalHTML = `
     <div class="modal" id="admin-modal">
-      <div class="modal-content glass" style="text-align: left;">
+      <div class="modal-content glass" style="text-align: left; max-width: 400px;">
         <button class="modal-close admin-close">&times;</button>
         <h3 style="margin-bottom: var(--space-sm);">Admin Bereich</h3>
         
@@ -170,11 +107,16 @@ export function Gallery() {
 
         <div id="admin-dashboard" style="display: none;">
            <p style="color: var(--primary); margin-bottom: 1rem;">Eingeloggt als Admin</p>
-           <h4 style="margin-bottom: 0.5rem;">Neues Projekt anlegen:</h4>
+           
+           <h4 style="margin-bottom: 0.5rem;">Bild hochladen:</h4>
            <input type="text" id="new-title" placeholder="Titel" style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; border-radius: 4px;">
-           <input type="text" id="new-category" placeholder="Kategorie" style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; border-radius: 4px;">
-           <button id="add-item-btn" class="btn btn-primary" style="width: 100%;">Hinzufügen</button>
-           <p style="font-size: 0.8rem; color: #aaa; margin-top: 20px;">Hinweis: Du kannst nun auch in der Galerie-Ansicht Bilder zu existierenden Projekten hinzufügen.</p>
+           <textarea id="new-description" placeholder="Beschreibung (statt Kategorie)" style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; border-radius: 4px; resize: vertical; min-height: 60px;"></textarea>
+           
+           <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #aaa;">Bild auswählen:</label>
+           <input type="file" id="new-image-file" accept="image/*" style="width: 100%; margin-bottom: 1rem; color: white;">
+
+           <button id="add-item-btn" class="btn btn-primary" style="width: 100%;">Hochladen & Speichern</button>
+           <button id="logout-btn" class="btn btn-secondary" style="width: 100%; margin-top: 10px; background: rgba(255, 255, 255, 0.1);">Logout</button>
         </div>
       </div>
     </div>
@@ -187,44 +129,86 @@ export function Gallery() {
   const adminDashboard = element.querySelector('#admin-dashboard');
   const loginSubmit = element.querySelector('#login-submit');
   const addItemBtn = element.querySelector('#add-item-btn');
+  const logoutBtn = element.querySelector('#logout-btn');
 
-  // --- Admin Feature (Global Login) ---
-  // Wait for Footer to be mounted
+  // --- Logic ---
+
+  // Refresh Grid Helper
+  const refreshGrid = () => {
+    grid.innerHTML = renderCards();
+  };
+
+  // Close logic
+  const closeModal = () => modal.classList.remove('active');
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Open Image Modal & Delete Logic
+  grid.addEventListener('click', (e) => {
+    // Delete Handle
+    if (e.target.classList.contains('delete-btn')) {
+      e.stopPropagation(); // prevent modal open
+      const index = e.target.getAttribute('data-index');
+      if (confirm('Bist du sicher, dass du dieses Bild löschen möchtest?')) {
+        items.splice(index, 1);
+        localStorage.setItem('gallery_items', JSON.stringify(items));
+        refreshGrid();
+      }
+      return;
+    }
+
+    // Modal Open Handle
+    const card = e.target.closest('.gallery-card');
+    if (card) {
+      const index = card.getAttribute('data-index');
+      const item = items[index];
+
+      modalTitle.textContent = item.title;
+      modalCategory.textContent = item.description;
+
+      // Reset Modal Image Style/Content
+      modalImage.style.backgroundImage = `url('${item.image}')`;
+      modalImage.style.backgroundSize = 'contain';
+      modalImage.style.backgroundRepeat = 'no-repeat';
+      modalImage.style.backgroundPosition = 'center';
+      modalImage.style.height = '400px'; // Ensure height
+      modalImage.innerHTML = ''; // Clear any internal divs
+
+      modal.classList.add('active');
+    }
+  });
+
+  // --- Admin Feature ---
+
+  // Trigger from Footer
   setTimeout(() => {
     const adminLoginBtn = document.getElementById('admin-trigger');
     if (adminLoginBtn) {
       adminLoginBtn.addEventListener('click', () => {
         adminModal.classList.add('active');
-        // Immer Login Form zeigen, außer schon eingeloggt
         if (isAdmin) {
           loginForm.style.display = 'none';
           adminDashboard.style.display = 'block';
         } else {
           loginForm.style.display = 'block';
           adminDashboard.style.display = 'none';
-          element.querySelector('#admin-password').value = ''; // Reset Password field
+          element.querySelector('#admin-password').value = '';
         }
       });
-
-      // Make it cursor pointer
       adminLoginBtn.style.cursor = 'pointer';
     }
   }, 500);
 
-  // Close Admin Modal
-  adminCloseBtn.addEventListener('click', () => {
-    adminModal.classList.remove('active');
-  });
+  adminCloseBtn.addEventListener('click', () => adminModal.classList.remove('active'));
 
-  // Login Logic (Secure Hash)
-  // Hash für 'Bachii1994!'
+  // Login
   const ADMIN_HASH = 'd577579f151b7f5d1adc46766926cc160637e1dd5399fd69a9e2dbcdc958a3ab';
-
   async function sha256(message) {
     const msgBuffer = new TextEncoder().encode(message);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
   loginSubmit.addEventListener('click', async () => {
@@ -233,34 +217,59 @@ export function Gallery() {
 
     if (inputHash === ADMIN_HASH) {
       isAdmin = true;
+      sessionStorage.setItem('isAdmin', 'true');
       loginForm.style.display = 'none';
       adminDashboard.style.display = 'block';
-      alert('Login erfolgreich! Admin-Funktionen freigeschaltet.');
+      refreshGrid(); // Update grid to show delete buttons
+      alert('Login erfolgreich!');
     } else {
       alert('Falsches Passwort!');
     }
   });
 
-  // Add Item Logic
+  // Logout
+  logoutBtn.addEventListener('click', () => {
+    isAdmin = false;
+    sessionStorage.removeItem('isAdmin');
+    adminModal.classList.remove('active');
+    refreshGrid(); // Remove delete buttons
+    alert('Ausgeloggt.');
+  });
+
+  // Add Item Logic (with File Reader)
   addItemBtn.addEventListener('click', () => {
-    const title = element.querySelector('#new-title').value;
-    const category = element.querySelector('#new-category').value;
+    const titleIn = element.querySelector('#new-title');
+    const descIn = element.querySelector('#new-description');
+    const fileIn = element.querySelector('#new-image-file');
 
-    if (title && category) {
-      const newCard = document.createElement('div');
-      newCard.className = 'gallery-card';
-      newCard.innerHTML = `
-        <div class="card-image"></div>
-        <div class="card-overlay">
-          <span class="card-category">${category}</span>
-          <h3 class="card-title">${title}</h3>
-        </div>
-      `;
-      grid.insertBefore(newCard, grid.firstChild);
+    if (titleIn.value && descIn.value && fileIn.files[0]) {
+      const file = fileIn.files[0];
+      const reader = new FileReader();
 
-      element.querySelector('#new-title').value = '';
-      element.querySelector('#new-category').value = '';
-      adminModal.classList.remove('active');
+      reader.onload = function (e) {
+        const base64Image = e.target.result;
+
+        const newItem = {
+          title: titleIn.value,
+          description: descIn.value,
+          image: base64Image
+        };
+
+        items.unshift(newItem); // Add to beginning
+        localStorage.setItem('gallery_items', JSON.stringify(items));
+        refreshGrid();
+
+        // Cleanup
+        titleIn.value = '';
+        descIn.value = '';
+        fileIn.value = '';
+        adminModal.classList.remove('active');
+        alert('Bild erfolgreich hochgeladen!');
+      };
+
+      reader.readAsDataURL(file);
+    } else {
+      alert('Bitte alle Felder ausfüllen und ein Bild wählen.');
     }
   });
 
