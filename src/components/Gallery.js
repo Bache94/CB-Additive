@@ -58,13 +58,14 @@ export function Gallery(showAll = false) {
         ${renderCards()}
       </div>
 
-      ${!showAll && items.length > 6 ? `
+      ${showAll ? `
         <div style="text-align: center; margin-top: var(--space-md); margin-bottom: var(--space-md);">
-            <a href="#projects" class="btn btn-primary">Alle Projekte ansehen</a>
+            <a href="#" class="btn btn-secondary">Zurück zur Startseite</a>
         </div>
       ` : ''}
 
-      <!-- Services Info Section (Moved Below) -->
+      <!-- Services Info Section (Conditional) -->
+      ${!showAll ? `
       <div class="glass" style="padding: var(--space-md); margin-top: var(--space-lg); margin-bottom: var(--space-lg); border-radius: var(--radius-md); max-width: 800px; margin-left: auto; margin-right: auto;">
         <h3 style="margin-bottom: var(--space-sm); color: var(--primary);">Was ich für dich drucken kann</h3>
         <p style="margin-bottom: var(--space-sm); color: var(--text-muted);">Ob technisches Bauteil, individuelle Deko oder ein besonderes Geschenk – ich unterstütze dich gerne bei deinem Projekt.</p>
@@ -97,6 +98,7 @@ export function Gallery(showAll = false) {
             </div>
         </div>
       </div>
+      ` : ''}
     </div>
     
     <!-- Lightbox Modal -->
@@ -286,18 +288,60 @@ export function Gallery(showAll = false) {
       const reader = new FileReader();
 
       reader.onload = function (e) {
-        const base64Image = e.target.result;
+        // Compression Logic
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
 
-        const newItem = {
-          title: titleIn.value,
-          description: descIn.value,
-          image: base64Image
+          // Max dimensions
+          const MAX_WIDTH = 600;
+          const MAX_HEIGHT = 600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Convert to JPEG with quality 0.6
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+
+          const newItem = {
+            title: titleIn.value,
+            description: descIn.value,
+            image: compressedBase64
+          };
+
+          items.unshift(newItem); // Add to beginning
+
+          try {
+            localStorage.setItem('gallery_items', JSON.stringify(items));
+            alert('Bild erfolgreich gespeichert!');
+            // Refresh page
+            window.location.reload();
+          } catch (err) {
+            // If still failing, show alert
+            if (err.name === 'QuotaExceededError') {
+              alert('Dein Speicherplatz für Bilder ist voll! Bitte lösche einige alte Bilder, um neue hochzuladen.');
+            } else {
+              alert('Fehler beim Speichern: ' + err.message);
+            }
+          }
         };
-
-        items.unshift(newItem); // Add to beginning
-        localStorage.setItem('gallery_items', JSON.stringify(items));
-        // Refresh page to update everything properly
-        window.location.reload();
       };
 
       reader.readAsDataURL(file);
