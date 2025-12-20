@@ -210,12 +210,11 @@ export function Gallery(showAll = false) {
     }
 
     // 2. Fetch from DB (Local)
-    const dbItems = await getItems();
+    // const dbItems = await getItems(); // Disabled to prevent duplicates on Desktop
+    const dbItems = [];
 
-    // 3. Merge: Local First (Newest), then Static (Fixed)
-    // Or Static first? Usually static are "Portfolio Highlights". 
-    // Let's put DB items (New Uploads) FIRST so user sees their new upload immediately.
-    items = [...dbItems, ...portfolioItems];
+    // 3. Merge: Only Static Data for now to ensure consistency across Mobile/Desktop
+    items = [...portfolioItems]; // ...dbItems removed
 
     refreshGrid();
   };
