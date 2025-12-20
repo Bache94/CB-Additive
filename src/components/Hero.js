@@ -9,7 +9,7 @@ export function Hero() {
     <div class="container hero-content">
       <div class="hero-title-row">
         <img src="/logo.png" alt="CB Additive" class="hero-logo reveal-text">
-        <h1 class="hero-title reveal-text">Meine <br><span class="gradient-text">Hobby-Projekte</span></h1>
+        <h1 class="hero-title reveal-text">Mein Hobby <br><span class="gradient-text">Projekte</span></h1>
       </div>
       <p class="hero-subtitle reveal-text delay-200">Ich bringe digitale Entwürfe mit meinem 3D-Drucker in die physische Realität.</p>
       <div class="hero-actions reveal-text delay-300">
