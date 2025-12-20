@@ -33,10 +33,20 @@ const router = () => {
             app.appendChild(module.Datenschutz());
             app.appendChild(Footer(true));
         });
+    } else if (hash === '#projects') {
+        // Full Gallery View
+        app.appendChild(Header());
+        app.appendChild(Gallery(true)); // showAll = true
+        app.appendChild(Footer(true));
+        // Text animation for new header
+        setTimeout(() => {
+            document.querySelectorAll('h2').forEach(el => new TextDecode(el));
+        }, 100);
     } else {
         // Landing Page (Default)
+        app.appendChild(Header());
         app.appendChild(Hero());
-        app.appendChild(Gallery());
+        app.appendChild(Gallery(false)); // showAll = false
         app.appendChild(About());
         app.appendChild(Footer());
 

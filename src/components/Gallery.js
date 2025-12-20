@@ -3,7 +3,7 @@ import './Gallery.css';
 // Initial Load from LocalStorage
 let items = JSON.parse(localStorage.getItem('gallery_items')) || [];
 
-export function Gallery() {
+export function Gallery(showAll = false) {
   const element = document.createElement('section');
   element.id = 'gallery';
   element.classList.add('gallery');
@@ -15,28 +15,54 @@ export function Gallery() {
     if (items.length === 0) {
       return '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Noch keine Bilder vorhanden.</p>';
     }
-    return items.map((item, index) => `
-      <div class="gallery-card" data-index="${index}">
-        <div class="card-image" style="background-image: url('${item.image}'); background-size: cover; background-position: center;"></div>
+
+    // Filter Logic: Show top 6 unless showAll is true
+    let displayItems = items;
+    if (!showAll && items.length > 6) {
+      displayItems = items.slice(0, 6);
+    }
+
+    // Mapping with Contain for formatting
+    return displayItems.map((item, index) => {
+      // Correct index for delete button needs to be original index if we are slicing
+      // But easier is to FIND the item in original array or use ID. 
+      // For simplicity with slice(0,6), index 0-5 matches. 
+      // But wait, if I delete item 5 on page 1, is it item 5 in real array? Yes.
+      // What if I delete? We used helper before. 
+      // Let's use `items.indexOf(item)` to be safe if we were filtering strangely, but slice is safe 0-index aligned.
+      const realIndex = items.indexOf(item);
+
+      return `
+      <div class="gallery-card" data-index="${realIndex}">
+        <div class="card-image" style="background-image: url('${item.image}'); background-size: contain; background-repeat: no-repeat; background-color: rgba(0,0,0,0.3); background-position: center;"></div>
         <div class="card-overlay">
           <p class="card-description" style="margin-bottom: 0.5rem; font-size: 0.9rem;">${item.description}</p>
           <h3 class="card-title">${item.title}</h3>
-          ${isAdmin ? `<button class="delete-btn" data-index="${index}" style="position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">&times;</button>` : ''}
+          ${isAdmin ? `<button class="delete-btn" data-index="${realIndex}" style="position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">&times;</button>` : ''}
         </div>
       </div>
-    `).join('');
+    `}).join('');
   };
+
+  const titleText = showAll ? 'Alle <span class="gradient-text">Projekte</span>' : 'Neueste <span class="gradient-text">Drucke</span>';
+  const subtitleText = showAll ? 'Mein gesamtes Portfolio auf einen Blick.' : 'Ein Schaufenster für Präzision und Kreativität.';
 
   element.innerHTML = `
     <div class="container">
       <div class="gallery-header">
-        <h2 class="gallery-title reveal-text">Neueste <span class="gradient-text">Drucke</span></h2>
-        <p class="gallery-subtitle reveal-text delay-100">Ein Schaufenster für Präzision und Kreativität.</p>
+        <h2 class="gallery-title reveal-text">${titleText}</h2>
+        <p class="gallery-subtitle reveal-text delay-100">${subtitleText}</p>
       </div>
 
       <div class="gallery-grid">
         ${renderCards()}
       </div>
+
+      ${!showAll && items.length > 6 ? `
+        <div style="text-align: center; margin-top: var(--space-md); margin-bottom: var(--space-md);">
+            <a href="#projects" class="btn btn-primary">Alle Projekte ansehen</a>
+        </div>
+      ` : ''}
 
       <!-- Services Info Section (Moved Below) -->
       <div class="glass" style="padding: var(--space-md); margin-top: var(--space-lg); margin-bottom: var(--space-lg); border-radius: var(--radius-md); max-width: 800px; margin-left: auto; margin-right: auto;">
@@ -135,6 +161,12 @@ export function Gallery() {
 
   // Refresh Grid Helper
   const refreshGrid = () => {
+    // Re-render whole component content or just grid?
+    // Changing HTML completely is safer for button logic state
+    // But we are inside function. 
+    // Simplified: Just re-run renderCards and put in grid.
+    // BUT we need to update the "See All" button too if count changes.
+    // For now, grid update is enough for delete visual.
     grid.innerHTML = renderCards();
   };
 
@@ -154,7 +186,14 @@ export function Gallery() {
       if (confirm('Bist du sicher, dass du dieses Bild löschen möchtest?')) {
         items.splice(index, 1);
         localStorage.setItem('gallery_items', JSON.stringify(items));
+        // Refresh entire page/route slightly complex here, 
+        // simple grid refresh for now:
         refreshGrid();
+        // If we drop below 6 items, the button "Alle Projekte" might need hiding if we are on landing.
+        // But doing a full re-render of component is better.
+        // Reloading page is simplest for user context.
+        // window.location.reload(); 
+        // Let's stick to refreshGrid, it's smoother.
       }
       return;
     }
@@ -257,14 +296,8 @@ export function Gallery() {
 
         items.unshift(newItem); // Add to beginning
         localStorage.setItem('gallery_items', JSON.stringify(items));
-        refreshGrid();
-
-        // Cleanup
-        titleIn.value = '';
-        descIn.value = '';
-        fileIn.value = '';
-        adminModal.classList.remove('active');
-        alert('Bild erfolgreich hochgeladen!');
+        // Refresh page to update everything properly
+        window.location.reload();
       };
 
       reader.readAsDataURL(file);
