@@ -58,6 +58,12 @@ export function Gallery(showAll = false) {
         ${renderCards()}
       </div>
 
+      ${!showAll && items.length >= 6 ? `
+        <div style="text-align: center; margin-top: var(--space-md); margin-bottom: var(--space-md);">
+            <a href="#projects" class="btn btn-primary">Alle Projekte ansehen</a>
+        </div>
+      ` : ''}
+
       ${showAll ? `
         <div style="text-align: center; margin-top: var(--space-md); margin-bottom: var(--space-md);">
             <a href="#" class="btn btn-secondary">Zurück zur Startseite</a>
