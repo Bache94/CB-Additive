@@ -11,6 +11,19 @@
 .gallery-title {
     font-size: 3rem;
     margin-bottom: var(--space-xs);
+    color: var(--text-main);
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: var(--space-xs);
+}
+
+.modal-category {
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1.5;
 }
 
 .gallery-subtitle {

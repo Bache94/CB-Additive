@@ -31,8 +31,8 @@ export function Gallery(showAll = false) {
       <div class="gallery-card" data-id="${item.id}">
         <div class="card-image" style="background-image: url('${item.image}'); background-size: contain; background-repeat: no-repeat; background-color: rgba(0,0,0,0.3); background-position: center;"></div>
         <div class="card-overlay">
-          <p class="card-description" style="margin-bottom: 0.5rem; font-size: 0.9rem;">${item.description}</p>
           <h3 class="card-title">${item.title}</h3>
+          <p class="card-description" style="margin-bottom: 0.5rem; font-size: 0.9rem;">${item.description}</p>
           ${isAdmin ? `<button class="delete-btn" data-id="${item.id}" style="position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">&times;</button>` : ''}
         </div>
       </div>
@@ -104,7 +104,7 @@ export function Gallery(showAll = false) {
         <button class="modal-close">&times;</button>
         <div class="modal-image"></div>
         <h3 class="modal-title"></h3>
-        <p class="modal-category" style="color: var(--primary); text-transform: uppercase; font-size: 0.8rem;"></p>
+        <p class="modal-category"></p>
       </div>
     </div>
   `;
