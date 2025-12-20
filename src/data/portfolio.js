@@ -52,7 +52,7 @@ export const portfolioItems = [
         id: 'proj-obstspueler',
         title: 'Der Obstspüler',
         description: 'Der smarte Küchenhelfer – Funktionaler Obstspüler. Problem gelöst durch 3D-Druck! Dieses clevere Gadget macht das Waschen von Beeren und kleinem Obst zum Kinderspiel. Maßgeschneidert für die Praxis, zeigt dieses funktionale Teil, wie nützlich selbstgedruckte Haushaltshelfer sein können. Robustes Design in Schwarz, das in keiner modernen Küche fehlen sollte.',
-        image: '/projects/Obstspühler.JPG',
+        image: '/projects/Obstspueler.JPG',
         category: 'Haushalt'
     },
     {
