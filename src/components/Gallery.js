@@ -215,6 +215,23 @@ export function Gallery(showAll = false) {
       return;
     }
 
+
+    // Reset zoom state on open
+    modalImage.classList.remove('is-zoomed');
+    modalImage.style.cursor = 'zoom-in';
+
+    // Image Zoom click handler
+    modalImage.onclick = (e) => {
+      e.stopPropagation(); // Don't close modal
+      modalImage.classList.toggle('is-zoomed');
+
+      if (modalImage.classList.contains('is-zoomed')) {
+        modalImage.style.cursor = 'zoom-out';
+      } else {
+        modalImage.style.cursor = 'zoom-in';
+      }
+    };
+
     // Modal Open Handle
     const card = e.target.closest('.gallery-card');
     if (card) {
@@ -234,6 +251,10 @@ export function Gallery(showAll = false) {
         modalImage.style.backgroundPosition = 'center';
         modalImage.style.height = '400px';
         modalImage.innerHTML = '';
+
+        // Ensure zoom is reset visually
+        modalImage.classList.remove('is-zoomed');
+        modalImage.style.cursor = 'zoom-in';
 
         modal.classList.add('active');
       }

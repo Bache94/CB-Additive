@@ -112,6 +112,25 @@
     margin-bottom: var(--space-sm);
     position: relative;
     overflow: hidden;
+    cursor: zoom-in;
+    transition: all 0.3s ease;
+}
+
+.modal-image.is-zoomed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2001;
+    /* Above modal content */
+    background-color: rgba(0, 0, 0, 0.95);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0;
+    border-radius: 0;
+    cursor: zoom-out;
 }
 
 /* Pattern for modal image */
