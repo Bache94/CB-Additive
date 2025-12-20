@@ -1,7 +1,5 @@
 import './Gallery.css';
-
-// Initial Load from LocalStorage
-let items = JSON.parse(localStorage.getItem('gallery_items')) || [];
+import { saveItem, getItems, deleteItem } from '../utils/db'; // Import DB helper
 
 export function Gallery(showAll = false) {
   const element = document.createElement('section');
@@ -10,10 +8,12 @@ export function Gallery(showAll = false) {
 
   // Check Admin Status (Session Storage for simple persist during refresh)
   let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+  let items = []; // Async logic: start empty
 
+  // -- Render Logic --
   const renderCards = () => {
     if (items.length === 0) {
-      return '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Noch keine Bilder vorhanden.</p>';
+      return '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Noch keine Bilder vorhanden (oder werden geladen...).</p>';
     }
 
     // Filter Logic: Show top 6 unless showAll is true
@@ -23,22 +23,17 @@ export function Gallery(showAll = false) {
     }
 
     // Mapping with Contain for formatting
-    return displayItems.map((item, index) => {
-      // Correct index for delete button needs to be original index if we are slicing
-      // But easier is to FIND the item in original array or use ID. 
-      // For simplicity with slice(0,6), index 0-5 matches. 
-      // But wait, if I delete item 5 on page 1, is it item 5 in real array? Yes.
-      // What if I delete? We used helper before. 
-      // Let's use `items.indexOf(item)` to be safe if we were filtering strangely, but slice is safe 0-index aligned.
-      const realIndex = items.indexOf(item);
+    return displayItems.map((item) => {
+      // We use item.id from DB for deletion now. 
+      // Migrate legacy items might lack ID initially in memory before reload, but we reload items from DB.
 
       return `
-      <div class="gallery-card" data-index="${realIndex}">
+      <div class="gallery-card" data-id="${item.id}">
         <div class="card-image" style="background-image: url('${item.image}'); background-size: contain; background-repeat: no-repeat; background-color: rgba(0,0,0,0.3); background-position: center;"></div>
         <div class="card-overlay">
           <p class="card-description" style="margin-bottom: 0.5rem; font-size: 0.9rem;">${item.description}</p>
           <h3 class="card-title">${item.title}</h3>
-          ${isAdmin ? `<button class="delete-btn" data-index="${realIndex}" style="position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">&times;</button>` : ''}
+          ${isAdmin ? `<button class="delete-btn" data-id="${item.id}" style="position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">&times;</button>` : ''}
         </div>
       </div>
     `}).join('');
@@ -55,14 +50,10 @@ export function Gallery(showAll = false) {
       </div>
 
       <div class="gallery-grid">
-        ${renderCards()}
+         <p style="text-align: center; color: var(--text-muted);">Lade Galerie...</p>
       </div>
-
-      ${!showAll && items.length >= 6 ? `
-        <div style="text-align: center; margin-top: var(--space-md); margin-bottom: var(--space-md);">
-            <a href="#projects" class="btn btn-primary">Alle Projekte ansehen</a>
-        </div>
-      ` : ''}
+      
+      <div id="view-all-container"></div>
 
       ${showAll ? `
         <div style="text-align: center; margin-top: var(--space-md); margin-bottom: var(--space-md);">
@@ -120,11 +111,11 @@ export function Gallery(showAll = false) {
 
   // --- Element Selectors ---
   const grid = element.querySelector('.gallery-grid');
+  const viewAllContainer = element.querySelector('#view-all-container');
   const modal = element.querySelector('#gallery-modal');
   const closeBtn = element.querySelector('.modal-close');
   const modalTitle = element.querySelector('.modal-title');
   const modalCategory = element.querySelector('.modal-category');
-  const modalContent = element.querySelector('.modal-content');
   const modalImage = element.querySelector('.modal-image');
 
   // --- Admin Modal HTML ---
@@ -148,6 +139,8 @@ export function Gallery(showAll = false) {
            
            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #aaa;">Bild auswählen:</label>
            <input type="file" id="new-image-file" accept="image/*" style="width: 100%; margin-bottom: 1rem; color: white;">
+           
+           <p style="font-size: 0.8rem; color: #888; margin-bottom: 1rem;"><i>Hinweis: Bilder werden nun in der Datenbank gespeichert (unbegrenzt).</i></p>
 
            <button id="add-item-btn" class="btn btn-primary" style="width: 100%;">Hochladen & Speichern</button>
            <button id="logout-btn" class="btn btn-secondary" style="width: 100%; margin-top: 10px; background: rgba(255, 255, 255, 0.1);">Logout</button>
@@ -165,18 +158,41 @@ export function Gallery(showAll = false) {
   const addItemBtn = element.querySelector('#add-item-btn');
   const logoutBtn = element.querySelector('#logout-btn');
 
-  // --- Logic ---
+  // --- Logic & Data Loading ---
 
-  // Refresh Grid Helper
   const refreshGrid = () => {
-    // Re-render whole component content or just grid?
-    // Changing HTML completely is safer for button logic state
-    // But we are inside function. 
-    // Simplified: Just re-run renderCards and put in grid.
-    // BUT we need to update the "See All" button too if count changes.
-    // For now, grid update is enough for delete visual.
     grid.innerHTML = renderCards();
+
+    // Update Button Visibility dynamically because items.length changes Async
+    if (!showAll && items.length >= 6) {
+      viewAllContainer.innerHTML = `
+            <div style="text-align: center; margin-top: var(--space-md); margin-bottom: var(--space-md);">
+                <a href="#projects" class="btn btn-primary">Alle Projekte ansehen</a>
+            </div>
+        `;
+    } else {
+      viewAllContainer.innerHTML = '';
+    }
   };
+
+  // INIT DATA
+  const initData = async () => {
+    // 1. Migration from LocalStorage (Legacy)
+    const legacy = JSON.parse(localStorage.getItem('gallery_items'));
+    if (legacy && legacy.length > 0) {
+      console.log("Migrating legacy items to IndexedDB...");
+      for (const item of legacy.reverse()) { // Reverse to keep order if possible
+        await saveItem(item);
+      }
+      localStorage.removeItem('gallery_items'); // Clear legacy
+    }
+
+    // 2. Fetch from DB
+    items = await getItems();
+    refreshGrid();
+  };
+
+  initData();
 
   // Close logic
   const closeModal = () => modal.classList.remove('active');
@@ -186,22 +202,15 @@ export function Gallery(showAll = false) {
   });
 
   // Open Image Modal & Delete Logic
-  grid.addEventListener('click', (e) => {
+  grid.addEventListener('click', async (e) => {
     // Delete Handle
     if (e.target.classList.contains('delete-btn')) {
       e.stopPropagation(); // prevent modal open
-      const index = e.target.getAttribute('data-index');
+      const id = parseInt(e.target.getAttribute('data-id'));
       if (confirm('Bist du sicher, dass du dieses Bild löschen möchtest?')) {
-        items.splice(index, 1);
-        localStorage.setItem('gallery_items', JSON.stringify(items));
-        // Refresh entire page/route slightly complex here, 
-        // simple grid refresh for now:
+        await deleteItem(id);
+        items = await getItems(); // Reload
         refreshGrid();
-        // If we drop below 6 items, the button "Alle Projekte" might need hiding if we are on landing.
-        // But doing a full re-render of component is better.
-        // Reloading page is simplest for user context.
-        // window.location.reload(); 
-        // Let's stick to refreshGrid, it's smoother.
       }
       return;
     }
@@ -209,21 +218,25 @@ export function Gallery(showAll = false) {
     // Modal Open Handle
     const card = e.target.closest('.gallery-card');
     if (card) {
-      const index = card.getAttribute('data-index');
-      const item = items[index];
+      // Find item by ID or Index. 
+      // card data-id is best.
+      const id = parseInt(card.getAttribute('data-id'));
+      const item = items.find(i => i.id === id);
 
-      modalTitle.textContent = item.title;
-      modalCategory.textContent = item.description;
+      if (item) {
+        modalTitle.textContent = item.title;
+        modalCategory.textContent = item.description;
 
-      // Reset Modal Image Style/Content
-      modalImage.style.backgroundImage = `url('${item.image}')`;
-      modalImage.style.backgroundSize = 'contain';
-      modalImage.style.backgroundRepeat = 'no-repeat';
-      modalImage.style.backgroundPosition = 'center';
-      modalImage.style.height = '400px'; // Ensure height
-      modalImage.innerHTML = ''; // Clear any internal divs
+        // Reset Modal Image Style/Content
+        modalImage.style.backgroundImage = `url('${item.image}')`;
+        modalImage.style.backgroundSize = 'contain';
+        modalImage.style.backgroundRepeat = 'no-repeat';
+        modalImage.style.backgroundPosition = 'center';
+        modalImage.style.height = '400px';
+        modalImage.innerHTML = '';
 
-      modal.classList.add('active');
+        modal.classList.add('active');
+      }
     }
   });
 
@@ -267,7 +280,7 @@ export function Gallery(showAll = false) {
       sessionStorage.setItem('isAdmin', 'true');
       loginForm.style.display = 'none';
       adminDashboard.style.display = 'block';
-      refreshGrid(); // Update grid to show delete buttons
+      refreshGrid(); // Refresh to show delete buttons if items loaded
       alert('Login erfolgreich!');
     } else {
       alert('Falsches Passwort!');
@@ -283,7 +296,7 @@ export function Gallery(showAll = false) {
     alert('Ausgeloggt.');
   });
 
-  // Add Item Logic (with File Reader)
+  // Add Item Logic (with File Reader & Compression)
   addItemBtn.addEventListener('click', () => {
     const titleIn = element.querySelector('#new-title');
     const descIn = element.querySelector('#new-description');
@@ -297,13 +310,13 @@ export function Gallery(showAll = false) {
         // Compression Logic
         const img = new Image();
         img.src = e.target.result;
-        img.onload = () => {
+        img.onload = async () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
 
-          // Max dimensions
-          const MAX_WIDTH = 600;
-          const MAX_HEIGHT = 600;
+          // Max dimensions (Still good to compress a bit for performance, but 800 is fine now)
+          const MAX_WIDTH = 800; // Increased a bit since we have space
+          const MAX_HEIGHT = 800;
           let width = img.width;
           let height = img.height;
 
@@ -323,8 +336,8 @@ export function Gallery(showAll = false) {
           canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Convert to JPEG with quality 0.6
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+          // Convert to JPEG with quality 0.7
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
 
           const newItem = {
             title: titleIn.value,
@@ -332,20 +345,22 @@ export function Gallery(showAll = false) {
             image: compressedBase64
           };
 
-          items.unshift(newItem); // Add to beginning
-
           try {
-            localStorage.setItem('gallery_items', JSON.stringify(items));
-            alert('Bild erfolgreich gespeichert!');
-            // Refresh page
-            window.location.reload();
+            // Save to DB
+            await saveItem(newItem);
+            alert('Bild erfolgreich gespeichert (DB)!');
+
+            // Reload Items (No full page reload needed, just fetch)
+            items = await getItems();
+            refreshGrid();
+
+            // Cleanup Form
+            titleIn.value = '';
+            descIn.value = '';
+            fileIn.value = '';
+            adminModal.classList.remove('active');
           } catch (err) {
-            // If still failing, show alert
-            if (err.name === 'QuotaExceededError') {
-              alert('Dein Speicherplatz für Bilder ist voll! Bitte lösche einige alte Bilder, um neue hochzuladen.');
-            } else {
-              alert('Fehler beim Speichern: ' + err.message);
-            }
+            alert('Fehler beim Speichern in Datenbank: ' + err);
           }
         };
       };
