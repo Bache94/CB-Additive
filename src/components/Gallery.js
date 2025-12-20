@@ -107,6 +107,9 @@ export function Gallery(showAll = false) {
         <p class="modal-category"></p>
       </div>
     </div>
+    
+    <!-- Fullscreen Zoom Overlay -->
+    <div id="zoom-overlay"></div>
   `;
 
   // --- Element Selectors ---
@@ -117,6 +120,24 @@ export function Gallery(showAll = false) {
   const modalTitle = element.querySelector('.modal-title');
   const modalCategory = element.querySelector('.modal-category');
   const modalImage = element.querySelector('.modal-image');
+  const zoomOverlay = element.querySelector('#zoom-overlay'); // New
+
+  // ... (Admin Modal HTML skipped for brevity, keeping existing references if needed, but context requires me to be careful about line numbers)
+  // Actually, I need to be careful not to overwrite the Admin Modal code which follows. 
+  // The Replace should target the HTML block AND the selector definitions if I want to insert the Overlay HTML.
+  // Let's stick to the plan:
+  // 1. Insert HTML for overlay.
+  // 2. Add Selector.
+  // 3. Update Logic.
+
+  // To be safe with `replace_file_content` on a large block, I will split this if possible or use context carefully.
+  // The `element.innerHTML` block ends around line 110.
+  // The selectors are 112-119.
+
+  // I'll do this in chunks via multi_replace if I can, but I only have replace_file_content enabled for single contiguous blocks or multi_replace.
+
+  // Let's use `multi_replace_file_content` for Gallery.js to do it cleanly.
+
 
   // --- Admin Modal HTML ---
   const uploadModalHTML = `
@@ -217,19 +238,19 @@ export function Gallery(showAll = false) {
 
 
     // Reset zoom state on open
-    modalImage.classList.remove('is-zoomed');
     modalImage.style.cursor = 'zoom-in';
 
-    // Image Zoom click handler
+    // Image Zoom click handler using Overlay
     modalImage.onclick = (e) => {
-      e.stopPropagation(); // Don't close modal
-      modalImage.classList.toggle('is-zoomed');
+      e.stopPropagation();
+      // Activate Overlay
+      zoomOverlay.style.backgroundImage = modalImage.style.backgroundImage;
+      zoomOverlay.classList.add('active');
+    };
 
-      if (modalImage.classList.contains('is-zoomed')) {
-        modalImage.style.cursor = 'zoom-out';
-      } else {
-        modalImage.style.cursor = 'zoom-in';
-      }
+    // Close Zoom Overlay
+    zoomOverlay.onclick = () => {
+      zoomOverlay.classList.remove('active');
     };
 
     // Modal Open Handle
