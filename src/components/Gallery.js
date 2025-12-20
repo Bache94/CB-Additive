@@ -1,4 +1,5 @@
 import './Gallery.css';
+import { portfolioItems } from '../data/portfolio'; // Import Static Data
 import { saveItem, getItems, deleteItem } from '../utils/db'; // Import DB helper
 
 export function Gallery(showAll = false) {
@@ -208,8 +209,14 @@ export function Gallery(showAll = false) {
       localStorage.removeItem('gallery_items'); // Clear legacy
     }
 
-    // 2. Fetch from DB
-    items = await getItems();
+    // 2. Fetch from DB (Local)
+    const dbItems = await getItems();
+
+    // 3. Merge: Local First (Newest), then Static (Fixed)
+    // Or Static first? Usually static are "Portfolio Highlights". 
+    // Let's put DB items (New Uploads) FIRST so user sees their new upload immediately.
+    items = [...dbItems, ...portfolioItems];
+
     refreshGrid();
   };
 
