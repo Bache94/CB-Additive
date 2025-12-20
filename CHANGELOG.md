@@ -2,6 +2,23 @@
 
 Alle Änderungen am Projekt "CB Additive Portfolio".
 
+## [Unreleased] - 2025-12-20
+
+### Hinzugefügt
+- **Speicher-Upgrade:** Migration von LocalStorage zu IndexedDB für Bilder-Uploads, um das Speicherlimit zu aufzuheben.
+- **Performance:** Automatische Bildkomprimierung beim Upload (max. 600px) für optimierte Ladezeiten.
+- **Navigation:** "Zurück zur Startseite"-Button in der "Alle Projekte"-Ansicht ergänzt.
+
+### Geändert
+- **Design & Layout:**
+  - Logo vom Header in die Hero-Sektion verschoben.
+  - Umfassende Mobile- & Tablet-Optimierung aller Komponenten.
+  - Globale Anpassung dunkler Textfarben auf Weiß für besseren Kontrast.
+- **Galerie-Logik:**
+  - "Alle Projekte ansehen" Button-Logik korrigiert (sichtbar ab 6 Bildern).
+  - "Was ich für dich drucken kann"-Box wird in der Vollansicht nun ausgeblendet.
+- **Admin:** Sichtbarkeit der Upload-Buttons auf eingeloggte Administratoren beschränkt.
+
 ## [Unreleased] - 2025-12-19
 
 ### Hinzugefügt
