@@ -43,9 +43,9 @@
       max-width: 300px;
       max-height: 300px;
       opacity: 0;
-      transform: scale(0.5);
+      /* Removed scale(0.5) so it starts big */
       filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.4));
-      animation: logo-entrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: logo-fade 1s ease-out forwards;
     }
 
     .loading-text {
@@ -83,7 +83,13 @@
       animation: shine-sweep 3s infinite 1.5s;
     }
 
-    @keyframes logo-entrance {
+    @keyframes logo-fade {
+      from {
+        opacity: 0;
+        transform: scale(1.05);
+        /* Slight settle effect instead of grow */
+      }
+
       to {
         opacity: 1;
         transform: scale(1);
