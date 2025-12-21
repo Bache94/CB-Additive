@@ -67,13 +67,13 @@ router();
 window.addEventListener('hashchange', router);
 
 // Hide splash screen and loading animation
+// Hide splash screen and loading animation
 window.addEventListener('load', async () => {
-    // Wait a moment for app to render
-    setTimeout(async () => {
-        // 1. Hide native splash screen
-        await SplashScreen.hide();
+    // 1. Hide native splash screen immediately so our HTML animation takes over
+    await SplashScreen.hide();
 
-        // 2. Fade out HTML loading screen
+    // 2. Wait for animation to finish (approx 2.5s)
+    setTimeout(() => {
         const loader = document.getElementById('loading-screen');
         if (loader) {
             loader.style.opacity = '0';
@@ -81,6 +81,6 @@ window.addEventListener('load', async () => {
                 loader.remove();
             }, 500);
         }
-    }, 500); // Small buffer to ensure smoothness
+    }, 2500); // 2.5s duration for WOW effect
 });
 
