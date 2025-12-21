@@ -233,7 +233,10 @@ export function Gallery(showAll = false) {
     // Delete Handle
     if (e.target.classList.contains('delete-btn')) {
       e.stopPropagation(); // prevent modal open
-      const id = parseInt(e.target.getAttribute('data-id'));
+      const rawId = e.target.getAttribute('data-id');
+      // If rawId is a number string, parse it. Otherwise treat as string (for potential future string-based DB keys)
+      // Note: Static items (string IDs) cannot be deleted from DB anyway.
+      const id = !isNaN(rawId) ? parseInt(rawId) : rawId;
       if (confirm('Bist du sicher, dass du dieses Bild löschen möchtest?')) {
         await deleteItem(id);
         items = await getItems(); // Reload
@@ -246,9 +249,9 @@ export function Gallery(showAll = false) {
     // Modal Open Handle - Check for closest card
     const card = e.target.closest('.gallery-card');
     if (card) {
-      // Find item by ID or Index. 
-      const id = parseInt(card.getAttribute('data-id'));
-      const item = items.find(i => i.id === id);
+      // Find item by ID. Use String comparison to handle both Number (DB) and String (Static) IDs.
+      const id = card.getAttribute('data-id');
+      const item = items.find(i => String(i.id) === id);
 
       if (item) {
         modalTitle.textContent = item.title;

@@ -18,3 +18,20 @@
 - Weitere eigene Bilder in `src/data/portfolio.js` eintragen oder über das Admin-Panel (nur lokal) testen.
 
 *Dieser Verlauf wurde gespeichert, um beim nächsten Start direkt weiterarbeiten zu können.*
+
+## Session: 21. Dezember 2025 - iOS App & Polish
+
+### Highlights:
+- [x] **Native iOS App:** Projekt mit **Capacitor** eingerichtet und erfolgreich auf iOS gebracht.
+- [x] **Rebranding:** App-Name final auf **CBadditive** festgelegt (Konfiguration, Splash Screen, Homescreen).
+- [x] **"WOW"-Startanimation (Intro):**
+    - Logo vergrößert (30vmin) und statisch (kein Wackeln/Zoomen) für cleanen Look.
+    - Cineastischer Text-Reveal für "CBadditive" mit Blur-In, Letter-Spacing und lebendigem Gradient (Cyan/Lila).
+    - Timing fixiert auf min. 2.5 Sekunden Anzeigedauer.
+- [x] **Bugfixes & UX:**
+    - **Mobile Menu:** Weiße Linien (toter Menü-Button) im Header entfernt.
+    - **Galerie:** Event-Handling für Zoom/Modal auf Touch-Geräten massiv verbessert (Overlay-Klicks gefixt).
+    - **App Icon:** Icon korrekt generiert (1024px single size).
+
+### Status:
+Die App ist nun build-bereit für iOS (`npx cap open ios`) und der Code ist sauber auf GitHub gepusht.
