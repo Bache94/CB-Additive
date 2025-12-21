@@ -7,11 +7,7 @@ export function Header() {
   element.innerHTML = `
     <div class="container header-content">
       <nav>
-        <button class="menu-toggle" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+      <nav>
         <ul class="nav-links">
           <li><a href="#hero">Startseite</a></li>
           <li><a href="#gallery">Meine Drucke</a></li>
