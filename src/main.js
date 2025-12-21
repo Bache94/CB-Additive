@@ -1,4 +1,5 @@
 import './style.css';
+import { SplashScreen } from '@capacitor/splash-screen';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Gallery } from './components/Gallery';
@@ -61,6 +62,25 @@ const router = () => {
 // Initial Render
 router();
 
+
 // Listen for hash changes
 window.addEventListener('hashchange', router);
+
+// Hide splash screen and loading animation
+window.addEventListener('load', async () => {
+    // Wait a moment for app to render
+    setTimeout(async () => {
+        // 1. Hide native splash screen
+        await SplashScreen.hide();
+
+        // 2. Fade out HTML loading screen
+        const loader = document.getElementById('loading-screen');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.remove();
+            }, 500);
+        }
+    }, 500); // Small buffer to ensure smoothness
+});
 

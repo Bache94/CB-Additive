@@ -1,0 +1,15 @@
+{
+  "appId": "com.bache.cbadditive",
+  "appName": "CBadditive",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "backgroundColor": "#050505",
+      "launchShowDuration": 2000,
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP",
+      "splashFullScreen": true,
+      "splashImmersive": true
+    }
+  }
+}
