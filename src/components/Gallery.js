@@ -243,27 +243,10 @@ export function Gallery(showAll = false) {
     }
 
 
-    // Reset zoom state on open
-    modalImage.style.cursor = 'zoom-in';
-
-    // Image Zoom click handler using Overlay
-    modalImage.onclick = (e) => {
-      e.stopPropagation();
-      // Activate Overlay
-      zoomOverlay.style.backgroundImage = modalImage.style.backgroundImage;
-      zoomOverlay.classList.add('active');
-    };
-
-    // Close Zoom Overlay
-    zoomOverlay.onclick = () => {
-      zoomOverlay.classList.remove('active');
-    };
-
-    // Modal Open Handle
+    // Modal Open Handle - Check for closest card
     const card = e.target.closest('.gallery-card');
     if (card) {
       // Find item by ID or Index. 
-      // card data-id is best.
       const id = parseInt(card.getAttribute('data-id'));
       const item = items.find(i => i.id === id);
 
@@ -278,10 +261,18 @@ export function Gallery(showAll = false) {
         modalImage.style.backgroundPosition = 'center';
         modalImage.style.height = '400px';
         modalImage.innerHTML = '';
-
-        // Ensure zoom is reset visually
-        modalImage.classList.remove('is-zoomed');
         modalImage.style.cursor = 'zoom-in';
+        modalImage.classList.remove('is-zoomed'); // reset zoom class
+
+        // -- Setup Inner Overlay Zoom Logic inside Modal --
+        modalImage.onclick = (ev) => {
+          ev.stopPropagation();
+          zoomOverlay.style.backgroundImage = modalImage.style.backgroundImage;
+          zoomOverlay.classList.add('active');
+        }
+
+        // Close Zoom Overlay logic
+        zoomOverlay.onclick = () => zoomOverlay.classList.remove('active');
 
         modal.classList.add('active');
       }
